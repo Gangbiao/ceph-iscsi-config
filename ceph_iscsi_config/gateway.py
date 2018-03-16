@@ -364,25 +364,27 @@ class GWTarget(object):
         for stg_object in lio_root.storage_objects:
 
             for tpg in self.tpg_list:
-                self.logger.debug("processing tpg{}".format(tpg.tag))
+               if tpg.tag != 5:
+                    self.logger.debug("processing tpg{}".format(tpg.tag))
 
-                if not self.lun_mapped(tpg, stg_object):
-                    self.logger.debug("{} needed mapping to "
-                                      "tpg{}".format(stg_object.name,
-                                                     tpg.tag))
+                    if not self.lun_mapped(tpg, stg_object):
+                        self.logger.debug("{} needed mapping to "
+                                          "tpg{}".format(stg_object.name,
+                                                         tpg.tag))
 
-                    lun_id = int(stg_object.path.split('/')[-2].split('_')[1])
+                        lun_id = int(stg_object.path.split('/')[-2].split('_')[1])
 
-                    try:
-                        mapped_lun = LUN(tpg, lun=lun_id, storage_object=stg_object)
-                        self.changes_made = True
-                    except RTSLibError as err:
-                        self.logger.error("LUN mapping failed: {}".format(err))
-                        self.error = True
-                        self.error_msg = err
-                        return
+                        try:
+                            self.logger.debug("------------test message from gateway.py:map_luns-------------------")
+                            mapped_lun = LUN(tpg, lun=lun_id, storage_object=stg_object)
+                            self.changes_made = True
+                        except RTSLibError as err:
+                            self.logger.error("LUN mapping failed: {}".format(err))
+                            self.error = True
+                            self.error_msg = err
+                            return
 
-                    self.bind_alua_group_to_lun(config, mapped_lun)
+                        self.bind_alua_group_to_lun(config, mapped_lun)
 
     def lun_mapped(self, tpg, storage_object):
         """
